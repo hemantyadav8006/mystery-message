@@ -75,7 +75,7 @@ const UserSchema: Schema<User> = new Schema(
 );
 
 const userModel =
-  (mongoose.models.User as mongoose.Model<User>) ||
-  mongoose.model<User>("User", UserSchema);
+  (mongoose.models.User as mongoose.Model<User>) || // if model exist
+  mongoose.model<User>("User", UserSchema); // if model is not present in the MongoDB
 
 export { userModel };
