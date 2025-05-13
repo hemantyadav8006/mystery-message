@@ -30,13 +30,18 @@ export async function POST(request: Request) {
           { status: 404 }
         );
       } else {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        existingUserByEmail.password = hashedPassword;
+        existingUserByEmail.verifyCode = verifyCode;
+        existingUserByEmail.verifyCodeExpires = new Date(Date.now() + 3600000);
+        await existingUserByEmail.save();
         return Response.json(
           {
-            success: false,
+            success: true,
             message:
-              "User is not verified with this Email. Please verify the email first.",
+              "User registered successfully. Please verify your Email now.",
           },
-          { status: 400 }
+          { status: 201 }
         );
       }
     } else {
@@ -58,7 +63,7 @@ export async function POST(request: Request) {
       await newUser.save();
     }
 
-    // this is for email
+    // Email sending otp code
     // const emailResponse = await sendVerificationEmail({
     //   username,
     //   email,
