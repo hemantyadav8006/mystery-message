@@ -1,7 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import { userModel } from "@/model/User.model";
 import bcrypt from "bcryptjs";
-import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
+// import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 
 export async function POST(request: Request) {
   await dbConnect();
@@ -27,14 +27,17 @@ export async function POST(request: Request) {
       if (existingUserByEmail.isVerified) {
         return Response.json(
           { success: false, message: "User already exist with this email" },
-          { status: 500 }
+          { status: 404 }
         );
       } else {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        existingUserByEmail.password = hashedPassword;
-        existingUserByEmail.verifyCode = verifyCode;
-        existingUserByEmail.verifyCodeExpires = new Date(Date.now() + 3600000);
-        await existingUserByEmail.save();
+        return Response.json(
+          {
+            success: false,
+            message:
+              "User is not verified with this Email. Please verify the email first.",
+          },
+          { status: 400 }
+        );
       }
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -55,18 +58,19 @@ export async function POST(request: Request) {
       await newUser.save();
     }
 
-    const emailResponse = await sendVerificationEmail({
-      username,
-      email,
-      verifyCode,
-    });
+    // this is for email
+    // const emailResponse = await sendVerificationEmail({
+    //   username,
+    //   email,
+    //   verifyCode,
+    // });
 
-    if (!emailResponse.success) {
-      return Response.json(
-        { success: false, message: emailResponse.message },
-        { status: 500 }
-      );
-    }
+    // if (!emailResponse.success) {
+    //   return Response.json(
+    //     { success: false, message: emailResponse.message },
+    //     { status: 500 }
+    //   );
+    // }
 
     return Response.json(
       {
@@ -76,7 +80,6 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error registering user");
     return Response.json(
       {
         success: false,

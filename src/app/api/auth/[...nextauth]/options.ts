@@ -27,7 +27,7 @@ export const authOptions: NextAuthOptions = {
             throw new Error("No user found with this credentials");
           }
 
-          if (user.isVerified) {
+          if (!user.isVerified) {
             throw new Error("Please verify your account before login");
           }
 
