@@ -45,9 +45,12 @@ export async function GET(req: Request) {
       data: user[0].messages,
     });
   } catch (error) {
-    return Response.json({
-      success: false,
-      message: "User not found with messages.",
-    });
+    return Response.json(
+      {
+        success: false,
+        message: "An unexpected error occured" + error,
+      },
+      { status: 500 }
+    );
   }
 }
