@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SessionProvider from "@/context/AuthProvider";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Mystery Message",
@@ -15,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <SessionProvider>
-        <body className={`antialiased`}>{children}</body>
+        <body className={`antialiased`}>
+          {children}
+          <Toaster />
+        </body>
       </SessionProvider>
     </html>
   );

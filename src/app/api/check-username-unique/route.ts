@@ -44,7 +44,7 @@ export async function GET(request: Request) {
       return Response.json(
         {
           success: false,
-          message: "username is already exist.",
+          message: "Username is already exist.",
         },
         { status: 400 }
       );
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
     return Response.json(
       {
         success: true,
-        message: "username is unique.",
+        message: "Username is unique.",
       },
       { status: 200 }
     );
