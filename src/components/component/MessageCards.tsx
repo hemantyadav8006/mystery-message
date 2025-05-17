@@ -23,7 +23,7 @@ import { Button } from "../ui/button";
 
 type MessageCardProps = {
   message: Message;
-  onMessageDelete: (messageId: any) => void;
+  onMessageDelete: (messageId: string) => void;
 };
 
 export function MessageCard({ message, onMessageDelete }: MessageCardProps) {

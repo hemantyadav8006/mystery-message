@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface Message extends Document {
+  _id: string;
   content: string;
   createdAt: Date;
 }
@@ -41,13 +42,9 @@ const UserSchema: Schema<User> = new Schema(
     },
     email: {
       type: String,
-      required: [true, "Email is required!"],
-      isLowerCase: true,
+      required: [true, "Email is required"],
       unique: true,
-      match: [
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, // simple regex for email validation
-        "Please fill a valid email address",
-      ],
+      match: [/.+\@.+\..+/, "Please use a valid email address"],
     },
     password: {
       type: String,
@@ -59,7 +56,7 @@ const UserSchema: Schema<User> = new Schema(
     },
     verifyCodeExpires: {
       type: Date,
-      required: [true, "Verify code expires is required!"],
+      required: [true, "Verify code Expiry is required!"],
     },
     isVerified: {
       type: Boolean,
