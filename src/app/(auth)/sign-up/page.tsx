@@ -78,8 +78,9 @@ export default function SignUpForm() {
       router.replace(`/verify/${username}`);
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
-      let errorMessage = axiosError.response?.data.message;
-      ("There was a problem with your sign-up. Please try again.");
+      let errorMessage =
+        axiosError.response?.data.message ||
+        "There was a problem with your sign-up. Please try again.";
 
       toast({
         title: "Sign Up Failed",
@@ -95,19 +96,21 @@ export default function SignUpForm() {
     <div className="flex justify-center items-center min-h-screen bg-gray-800">
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
         <div className="text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
+          <h1 className="text-4xl font-extrabold tracking-tight mb-3">
             Join True Feedback
           </h1>
           <p className="mb-4">Sign up to start your anonymous adventure</p>
         </div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               name="username"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username</FormLabel>
+                  <FormLabel>
+                    Username <span className="text-red-600">*</span>
+                  </FormLabel>
                   <Input
                     {...field}
                     onChange={(e) => {
@@ -136,10 +139,12 @@ export default function SignUpForm() {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>
+                    Email <span className="text-red-600">*</span>
+                  </FormLabel>
                   <Input {...field} name="email" />
                   <p className="text-muted text-gray-400 text-sm">
-                    We will send you a verification code
+                    We will send you a verification code.
                   </p>
                   <FormMessage />
                 </FormItem>
@@ -151,7 +156,9 @@ export default function SignUpForm() {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>
+                    Password <span className="text-red-600">*</span>
+                  </FormLabel>
                   <Input type="password" {...field} name="password" />
                   <FormMessage />
                 </FormItem>

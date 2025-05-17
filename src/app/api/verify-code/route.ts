@@ -5,13 +5,13 @@ export async function POST(request: Request) {
   await dbConnect();
 
   try {
-    const { email, otp } = await request.json();
+    const { username, otp } = await request.json();
 
     const user = await userModel.findOne({
-      email: email,
+      username: username,
       isVerified: false,
     });
-    
+
     if (!user) {
       return Response.json(
         {
