@@ -1,7 +1,7 @@
 import dbConnect from "@/lib/dbConnect";
 import { userModel } from "@/model/User.model";
 import bcrypt from "bcryptjs";
-// import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
+import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 
 export async function POST(request: Request) {
   await dbConnect();
@@ -35,14 +35,6 @@ export async function POST(request: Request) {
         existingUserByEmail.verifyCode = verifyCode;
         existingUserByEmail.verifyCodeExpires = new Date(Date.now() + 3600000);
         await existingUserByEmail.save();
-        return Response.json(
-          {
-            success: true,
-            message:
-              "User registered successfully. Please verify your Email now.",
-          },
-          { status: 201 }
-        );
       }
     } else {
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -64,23 +56,23 @@ export async function POST(request: Request) {
     }
 
     // Email sending otp code
-    // const emailResponse = await sendVerificationEmail({
-    //   username,
-    //   email,
-    //   verifyCode,
-    // });
+    const emailResponse = await sendVerificationEmail({
+      username,
+      email,
+      verifyCode,
+    });
 
-    // if (!emailResponse.success) {
-    //   return Response.json(
-    //     { success: false, message: emailResponse.message },
-    //     { status: 500 }
-    //   );
-    // }
+    if (!emailResponse.success) {
+      return Response.json(
+        { success: false, message: emailResponse.message },
+        { status: 500 }
+      );
+    }
 
     return Response.json(
       {
         success: true,
-        message: "User registered successfully. Please verify your Email now.",
+        message: "User registered successfully. Please verify your Email.",
       },
       { status: 201 }
     );
