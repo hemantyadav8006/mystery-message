@@ -4,7 +4,7 @@ import SessionProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "Mystery Message",
+  title: "Mystery Message | True Feedback",
   description: "Mystery Message for real/pure feedbacks!",
 };
 
