@@ -1,7 +1,7 @@
 "use client";
 import { Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import Autoplay from "embla-carousel-autoplay";
+import Autoplay from "embla-carousel-autoplay";
 import messages from "@/message.json";
 
 import {
@@ -24,7 +24,7 @@ export default function Home() {
         </section>
 
         <Carousel
-          //   plugins={[Autoplay({ delay: 2000 })]}
+          plugins={[Autoplay({ delay: 1500 })]}
           className="w-full max-w-lg md:max-w-xl"
         >
           <CarouselContent>
