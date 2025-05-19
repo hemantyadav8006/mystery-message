@@ -94,7 +94,7 @@ function UserDashboard() {
         setIsSwitchLoading(false);
       }
     },
-    [toast]
+    [setValue, session]
   );
 
   useEffect(() => {
