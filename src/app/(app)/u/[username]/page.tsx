@@ -92,7 +92,7 @@ export default function SendMessage() {
               </Button>
             ) : (
               <Button type="submit" disabled={isLoading || !messageContent}>
-                Send It
+                Send
               </Button>
             )}
           </div>

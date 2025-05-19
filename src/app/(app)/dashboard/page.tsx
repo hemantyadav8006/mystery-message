@@ -73,8 +73,8 @@ function UserDashboard() {
     async (refresh: boolean = false) => {
       setIsLoading(true);
       try {
-        const response = await axios.get<ApiResponse>("/api/get-messages");
-        setMessages(response.data.messages || []);
+        const response = await axios.get("/api/get-messages");
+        setMessages(response?.data?.data);
         if (refresh) {
           toast({
             title: "Refreshed Messages",
@@ -188,7 +188,7 @@ function UserDashboard() {
           <RefreshCcw className="h-4 w-4" />
         )}
       </Button>
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="mt-4 grid grid-cols-3 gap-4">
         {messages.length > 0 ? (
           messages.map((message) => (
             <MessageCard
