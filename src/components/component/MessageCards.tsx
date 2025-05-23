@@ -52,11 +52,11 @@ export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
   return (
     <Card className="card-bordered">
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>{message.content}</CardTitle>
+        <div className="relative flex justify-between items-center">
+          <CardTitle className="text-md">{message.content}</CardTitle>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive">
+              <Button className="absolute h-7 w-4 -top-5 -right-5" variant="destructive">
                 <X className="w-5 h-5" />
               </Button>
             </AlertDialogTrigger>
