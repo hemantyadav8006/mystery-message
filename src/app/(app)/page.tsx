@@ -19,7 +19,7 @@ export default function Home() {
             Explore the World of Anonymous Reviews
           </h1>
           <p className="mt-3 md:mt-4 text-base md:text-lg">
-            True Feedback - where you don't reveal who you are.
+            {"True Feedback - where you don't reveal who you are."}
           </p>
         </section>
 
