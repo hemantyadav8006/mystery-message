@@ -5,11 +5,11 @@ import { userModel } from "@/model/User.model";
 import { User } from "next-auth";
 import mongoose from "mongoose";
 
-export async function GET(req: Request) {
+export async function GET() {
   await dbConnect();
 
   const session = await getServerSession(authOptions);
-  const user: User = session?.user; // already logged in user
+  const user: User = session?.user;
 
   if (!session || !session?.user) {
     return Response.json(
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
     return Response.json(
       {
         success: false,
-        message: "An unexpected error occured" + error,
+        message: "An unexpected error occured: " + error,
       },
       { status: 500 }
     );

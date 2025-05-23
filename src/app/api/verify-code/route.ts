@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         success: false,
-        message: "Error verifing user",
+        message: `Error verifing user: ${error}`,
       },
       { status: 500 }
     );

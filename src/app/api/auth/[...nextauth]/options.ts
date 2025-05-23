@@ -4,16 +4,29 @@ import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/dbConnect";
 import { userModel } from "@/model/User.model";
 
+interface NextAuthUser {
+  id: string;
+  _id: string;
+  username: string;
+  email: string;
+  isVerified: boolean;
+  isAcceptingMessages: boolean;
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       id: "credentials",
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
+        identifier: { label: "Email or Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials: any): Promise<any> {
+      async authorize(credentials): Promise<NextAuthUser | null> {
+        if (!credentials?.identifier || !credentials?.password) {
+          return null;
+        }
+
         await dbConnect();
         try {
           const user = await userModel.findOne({
@@ -22,7 +35,7 @@ export const authOptions: NextAuthOptions = {
               { username: credentials.identifier },
             ],
           });
-          console.log("user: ", user);
+
           if (!user) {
             throw new Error("No user found with this email");
           }
@@ -35,12 +48,19 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (isPasswordCorrect) {
-            return user;
+            return {
+              id: user._id.toString(),
+              _id: user._id.toString(),
+              username: user.username,
+              email: user.email,
+              isVerified: user.isVerified,
+              isAcceptingMessages: user.isAcceptingMessages,
+            };
           } else {
             throw new Error("Incorrect Password");
           }
-        } catch (err: any) {
-          throw new Error(err);
+        } catch (err) {
+          throw new Error(`${err}`);
         }
       },
     }),

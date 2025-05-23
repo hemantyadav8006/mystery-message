@@ -47,11 +47,10 @@ export default function SignUpForm() {
         setIsCheckingUsername(true);
         setUsernameMessage("");
         try {
-          console.log("usernmae: ", username);
           const response = await axios.get<ApiResponse>(
             `/api/check-username-unique?username=${username}`
           );
-          let message = response.data.message;
+          const message = response.data.message;
           setUsernameMessage(message);
         } catch (error) {
           const axiosError = error as AxiosError<ApiResponse>;
@@ -78,7 +77,7 @@ export default function SignUpForm() {
       router.replace(`/verify/${username}`);
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
-      let errorMessage =
+      const errorMessage =
         axiosError.response?.data.message ||
         "There was a problem with your sign-up. Please try again.";
 

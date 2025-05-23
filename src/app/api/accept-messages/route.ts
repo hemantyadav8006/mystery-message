@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   await dbConnect();
 
   const session = await getServerSession(authOptions);
-  const user: User = session?.user; // already logged in user
+  const user: User = session?.user;
 
   if (!session || !session?.user) {
     return Response.json(
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   }
 
   const userId = user?._id;
-  const { acceptMessages } = await req.json(); // flag
+  const { acceptMessages } = await req.json();
 
   try {
     const updatedUser = await userModel.findByIdAndUpdate(
@@ -52,18 +52,18 @@ export async function POST(req: Request) {
     return Response.json(
       {
         success: false,
-        message: "Failed to Update user status to accept messages",
+        message: `Failed to Update user status to accept messages: ${error}`,
       },
       { status: 500 }
     );
   }
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   await dbConnect();
 
   const session = await getServerSession(authOptions);
-  const user: User = session?.user; // already logged in user
+  const user: User = session?.user;
 
   if (!session || !session?.user) {
     return Response.json(
@@ -99,7 +99,7 @@ export async function GET(req: Request) {
     return Response.json(
       {
         success: false,
-        message: "Failed to Update user status to accept messages",
+        message: `Failed to Update user status to accept messages: ${error}`,
       },
       { status: 500 }
     );

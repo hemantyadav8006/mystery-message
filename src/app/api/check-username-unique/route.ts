@@ -16,7 +16,6 @@ export async function GET(request: Request) {
       username: searchParams.get("username"),
     };
 
-    // validate with zod
     const result = UsernameQuerySchema.safeParse(queryParam);
 
     if (!result.success) {
@@ -61,7 +60,7 @@ export async function GET(request: Request) {
     return Response.json(
       {
         success: false,
-        message: "Error checking username",
+        message: `Error checking username: ${error}`,
       },
       { status: 500 }
     );

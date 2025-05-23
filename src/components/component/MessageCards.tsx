@@ -20,10 +20,11 @@ import { ApiResponse } from "@/types/ApiResponse";
 import { Message } from "@/model/User.model";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "../ui/button";
+import { Schema } from "mongoose";
 
 type MessageCardProps = {
   message: Message;
-  onMessageDelete: (messageId: string) => void;
+  onMessageDelete: (messageId: Schema.Types.ObjectId) => void;
 };
 
 export function MessageCard({ message, onMessageDelete }: MessageCardProps) {

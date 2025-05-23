@@ -1,12 +1,11 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface Message extends Document {
-  _id: string;
+export interface IMessage {
   content: string;
   createdAt: Date;
 }
 
-export interface User extends Document {
+export interface IUser {
   username: string;
   email: string;
   password: string;
@@ -14,7 +13,15 @@ export interface User extends Document {
   verifyCodeExpires: Date;
   isVerified: boolean;
   isAcceptingMessages: boolean;
-  messages: Message[];
+  messages: IMessage[];
+}
+
+export interface Message extends IMessage, Document {
+  _id: Schema.Types.ObjectId;
+}
+
+export interface User extends IUser, Document {
+  _id: Schema.Types.ObjectId;
 }
 
 const MessageSchema: Schema<Message> = new Schema(

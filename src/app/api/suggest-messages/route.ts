@@ -21,14 +21,15 @@ export async function POST(req: NextRequest) {
     });
 
     return result.toDataStreamResponse();
-  } catch (error: any) {
-    console.error("AI stream error:", error);
-    return NextResponse.json(
-      {
-        error: "An unexpected error occurred.",
-        details: error.message || String(error),
-      },
-      { status: 500 }
-    );
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json(
+        {
+          error: "An unexpected error occurred.",
+          details: error.message || String(error),
+        },
+        { status: 500 }
+      );
+    }
   }
 }

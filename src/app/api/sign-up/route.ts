@@ -55,7 +55,6 @@ export async function POST(request: Request) {
       await newUser.save();
     }
 
-    // Email sending otp code
     const emailResponse = await sendVerificationEmail({
       username,
       email,
@@ -80,7 +79,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         success: false,
-        message: "Error registering user",
+        message: `Error registering user: ${error}`,
       },
       { status: 500 }
     );

@@ -1,5 +1,5 @@
 {
-  "name": "mstrymsg",
+  "name": "mystery-message",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -30,7 +30,7 @@
     "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.510.0",
     "mongoose": "^8.9.5",
-    "next": "^15.3.2",
+    "next": "^15.1.8",
     "next-auth": "^4.24.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

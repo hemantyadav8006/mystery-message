@@ -11,6 +11,7 @@ import { ApiResponse } from "@/types/ApiResponse";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios, { AxiosError } from "axios";
 import { Loader2, RefreshCcw } from "lucide-react";
+import { Schema } from "mongoose";
 import { useSession } from "next-auth/react";
 import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -22,7 +23,7 @@ function UserDashboard() {
 
   const { toast } = useToast();
 
-  const handleDeleteMessage = async (messageId: string) => {
+  const handleDeleteMessage = async (messageId: Schema.Types.ObjectId) => {
     try {
       await axios.delete(`/api/delete-message/${messageId}`);
       setMessages(messages.filter((message) => message._id !== messageId));
@@ -77,24 +78,21 @@ function UserDashboard() {
         setMessages(response?.data?.data);
         if (refresh) {
           toast({
-            title: "Refreshed Messages",
+            title: "Messages Refreshed!",
             description: "Showing latest messages",
           });
         }
       } catch (error) {
         const axiosError = error as AxiosError<ApiResponse>;
         toast({
-          title: "Error",
-          description:
-            axiosError.response?.data.message ?? "Failed to fetch messages",
-          variant: "destructive",
+          description: axiosError.response?.data.message,
         });
       } finally {
         setIsLoading(false);
         setIsSwitchLoading(false);
       }
     },
-    [setValue, session]
+    [toast]
   );
 
   useEffect(() => {
@@ -190,9 +188,9 @@ function UserDashboard() {
       </Button>
       <div className="mt-4 grid grid-cols-3 gap-4">
         {messages.length > 0 ? (
-          messages.map((message) => (
+          messages.map((message, i) => (
             <MessageCard
-              key={message._id}
+              key={i}
               message={message}
               onMessageDelete={handleDeleteMessage}
             />
