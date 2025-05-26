@@ -10,10 +10,10 @@ function Navbar() {
   const user: User = session?.user;
 
   return (
-    <nav className="p-4 md:p-6 shadow-md bg-gray-900 text-white">
-      <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-        <Link href="/" className="text-xl font-bold mb-4 md:mb-0">
-          Mystery Message
+    <nav className="p-4 sm:p-6 shadow-md bg-gray-900 text-white">
+      <div className="container mx-auto flex justify-between align-middle">
+        <Link href="/" className="text-xl font-bold mt-1">
+          True Feedback
         </Link>
         {session ? (
           <>
@@ -22,7 +22,7 @@ function Navbar() {
             </span>
             <Button
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="w-full md:w-auto bg-slate-100 text-black"
+              className="w-full md:w-auto bg-slate-200 hover:bg-slate-300 text-black"
               variant="outline"
             >
               Logout
@@ -31,7 +31,7 @@ function Navbar() {
         ) : (
           <Link href="/sign-in">
             <Button
-              className="w-full md:w-auto bg-slate-100 text-black"
+              className="w-full md:w-auto bg-slate-200 hover:bg-slate-300 text-black"
               variant={"outline"}
             >
               Login

@@ -16,9 +16,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signInSchema } from "@/Schemas/signInSchema";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function SignInForm() {
   const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -27,33 +30,40 @@ export default function SignInForm() {
       password: "",
     },
   });
-
   const { toast } = useToast();
+
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    const result = await signIn("credentials", {
-      redirect: false,
-      identifier: data.identifier,
-      password: data.password,
-    });
+    setIsSubmitting(true);
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        identifier: data.identifier,
+        password: data.password,
+      });
 
-    if (result?.error) {
-      if (result.error === "CredentialsSignin") {
-        toast({
-          title: "Login Failed",
-          description: "Incorrect username or password",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: result.error,
-          variant: "destructive",
-        });
+      if (result?.error) {
+        if (result.error === "CredentialsSignin") {
+          toast({
+            title: "Login Failed",
+            description: "Incorrect username or password",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          });
+        }
       }
-    }
 
-    if (result?.url) {
-      router.replace("/dashboard");
+      if (result?.url) {
+        router.replace("/dashboard");
+      }
+    } catch (error) {
+      throw new Error(`${error}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -90,8 +100,17 @@ export default function SignInForm() {
                 </FormItem>
               )}
             />
-            <Button className="w-full" type="submit">
-              Sign In
+            <Button className="w-full" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </>
+                </>
+              ) : (
+                "Sign in"
+              )}
             </Button>
           </form>
         </Form>
