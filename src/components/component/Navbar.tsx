@@ -11,13 +11,13 @@ function Navbar() {
 
   return (
     <nav className="p-4 sm:p-6 shadow-md bg-gray-900 text-white">
-      <div className="container mx-auto flex justify-between align-middle">
-        <Link href="/" className="text-xl font-bold mt-1">
+      <div className="container mx-auto flex flex-col text-center sm:flex-row justify-between align-middle">
+        <Link href="/" className="text-xl font-bold">
           True Feedback
         </Link>
         {session ? (
           <>
-            <span className="mr-4">
+            <span className="mr-4 mb-2 sm:mb-0">
               Welcome, {user?.username || user?.email}
             </span>
             <Button
