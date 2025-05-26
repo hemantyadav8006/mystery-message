@@ -1,6 +1,7 @@
 This is a [Next.js](https://nextjs.org) project.
 
-### [Live Link](https://mystery-message-opal.vercel.app/)
+### [Live Link](https://feedback-messages.vercel.app/)
+
 ---
 
 ## Getting Started
@@ -8,7 +9,7 @@ This is a [Next.js](https://nextjs.org) project.
 First, Clone the repo
 
 ```bash
-git clone https://github.com/hemantyadav8006/Mstry_Msg
+git clone https://github.com/hemantyadav8006/mystery-message.git
 ```
 
 ---
@@ -27,10 +28,12 @@ bun dev
 
 ---
 
-```docs
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### Environment variables you need for this project
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```docs
+NEXTAUTH_SECRET=xyz
+MONGODB_URI=
+RESEND_API_KEY=
 ```
 
 ---
