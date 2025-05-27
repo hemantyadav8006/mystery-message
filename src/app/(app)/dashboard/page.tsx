@@ -142,7 +142,7 @@ function UserDashboard() {
   };
 
   return (
-    <div className="p-5 bg-white">
+    <div className="p-5 xl:px-60 lg:px-40 md:px-28 bg-white">
       <h1 className="text-4xl font-bold mb-4">User Dashboard</h1>
 
       <div className="mb-4">
