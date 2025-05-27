@@ -20,6 +20,7 @@ function UserDashboard() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSwitchLoading, setIsSwitchLoading] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const { toast } = useToast();
 
@@ -135,10 +136,14 @@ function UserDashboard() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(profileUrl);
+    setIsCopied(true);
     toast({
       title: "URL Copied!",
       description: "Profile URL has been copied to clipboard.",
     });
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 3000);
   };
 
   return (
@@ -154,7 +159,9 @@ function UserDashboard() {
             disabled
             className="input input-bordered w-full p-2 mr-2"
           />
-          <Button onClick={copyToClipboard}>Copy</Button>
+          <Button onClick={copyToClipboard}>
+            {isCopied ? "Copied!" : "Copy"}
+          </Button>
         </div>
       </div>
 

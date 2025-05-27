@@ -8,6 +8,7 @@ import { ApiResponse } from "@/types/ApiResponse";
 import { Message } from "@/model/User.model";
 import { useToast } from "@/hooks/use-toast";
 import { Schema } from "mongoose";
+import { Loader2 } from "lucide-react";
 
 type MessageCardProps = {
   message: Message;
@@ -17,9 +18,11 @@ type MessageCardProps = {
 export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
   const { toast } = useToast();
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleDeleteConfirm = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.delete<ApiResponse>(
         `/api/delete-message/${message._id}`
       );
@@ -35,6 +38,7 @@ export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
       });
     } finally {
       setShowConfirm(false);
+      setIsLoading(false);
     }
   };
 
@@ -75,7 +79,11 @@ export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
                 onClick={handleDeleteConfirm}
                 className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600 text-sm"
               >
-                Delete
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Delete"
+                )}
               </button>
             </div>
           </div>
