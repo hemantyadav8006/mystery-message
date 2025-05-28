@@ -43,12 +43,12 @@ export function MessageCard({ message, onMessageDelete }: MessageCardProps) {
   };
 
   return (
-    <div className="relative flex flex-col justify-between rounded-lg shadow-xl border-[1px] h-[100px] p-3">
+    <div className="relative flex flex-col justify-between rounded-lg shadow-lg border-[1px] h-[100px] p-3">
       <button
         onClick={() => setShowConfirm(true)}
-        className="absolute bg-red-500 hover:bg-red-600 p-2 text-white rounded top-1 right-1"
+        className="absolute text-[22px] text-red-500 hover:text-red-600 p-2 rounded top-1 right-1"
       >
-        <RiDeleteBin5Line />
+        <RiDeleteBin5Line className="drop-shadow-[0_0_4px_rgba(255,0,0,1)]" />
       </button>
 
       <p className="font-semibold dark:text-gray-400 overflow-auto">
