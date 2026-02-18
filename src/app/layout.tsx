@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/toaster";
 
+const inter = Inter({ subsets: ["latin"] });
+
 export const metadata: Metadata = {
   title: "Mystery Message | True Feedback",
-  description: "Mystery Message for real/pure feedbacks!",
+  description: "Get honest, anonymous feedback from anyone — without revealing identities.",
 };
 
 export default function RootLayout({
@@ -14,9 +17,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <SessionProvider>
-        <body className={`antialiased`}>
+        <body className={`${inter.className} antialiased`}>
           {children}
           <Toaster />
         </body>

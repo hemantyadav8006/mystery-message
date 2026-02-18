@@ -14,11 +14,13 @@ import {
 interface VerificationEmailProps {
   username: string;
   otp: string;
+  baseUrl?: string;
 }
 
 export default function VerificationEmail({
   username,
   otp,
+  baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
 }: VerificationEmailProps) {
   return (
     <Html lang="en" dir="ltr">
@@ -35,11 +37,11 @@ export default function VerificationEmail({
           fontStyle="normal"
         />
       </Head>
-      <Preview>Here's your verification code: 😉</Preview>
+      <Preview>Here&apos;s your verification code</Preview>
       <Container style={containerStyle}>
         <Section style={headerStyle}>
           <Heading as="h1" style={headerTextStyle}>
-            Welcome to Mystery Message | True Feedback
+            Welcome to Mystery Message
           </Heading>
         </Section>
 
@@ -65,7 +67,7 @@ export default function VerificationEmail({
           </Row>
           <Row>
             <Button
-              href={`http://localhost:3000/verify/${username}`}
+              href={`${baseUrl}/verify/${username}`}
               style={buttonStyle}
             >
               Verify Now
@@ -75,10 +77,8 @@ export default function VerificationEmail({
 
         <Section style={footerStyle}>
           <Text style={footerTextStyle}>
-            &copy; 2025 Mystery Message | True Feedback. All rights reserved.
-          </Text>
-          <Text style={footerTextStyle}>
-            Need help? Contact us at hemantyadav8006@gmail.com
+            &copy; {new Date().getFullYear()} Mystery Message | True Feedback.
+            All rights reserved.
           </Text>
         </Section>
       </Container>

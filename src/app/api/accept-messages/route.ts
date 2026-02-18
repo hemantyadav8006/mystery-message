@@ -1,107 +1,31 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/options";
-import dbConnect from "@/lib/dbConnect";
-import { userModel } from "@/model/User.model";
-import { User } from "next-auth";
+import { withErrorHandler } from "@/lib/api-handler";
+import { withAuth } from "@/middleware/auth.middleware";
+import { messageService } from "@/services/message.service";
+import { successResponse } from "@/lib/api-response";
+import { acceptMessagesSchema } from "@/Schemas/message.schema";
+import { ValidationError } from "@/lib/errors";
 
-export async function POST(req: Request) {
-  await dbConnect();
+export const POST = withErrorHandler(
+  withAuth(async (req, user) => {
+    const body = await req.json();
+    const result = acceptMessagesSchema.safeParse(body);
 
-  const session = await getServerSession(authOptions);
-  const user: User = session?.user;
-
-  if (!session || !session?.user) {
-    return Response.json(
-      {
-        success: false,
-        message: "Not authenticated",
-      },
-      { status: 401 }
-    );
-  }
-
-  const userId = user?._id;
-  const { acceptMessages } = await req.json();
-
-  try {
-    const updatedUser = await userModel.findByIdAndUpdate(
-      userId,
-      { isAcceptingMessages: acceptMessages },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      return Response.json(
-        {
-          success: false,
-          message: "Failed to update user status.",
-        },
-        { status: 401 }
-      );
+    if (!result.success) {
+      const errors = result.error.issues.map((i) => i.message);
+      throw new ValidationError("Validation failed", errors);
     }
 
-    return Response.json(
-      {
-        success: true,
-        message: "Message acceptance status updated successfully",
-        data: updatedUser,
-      },
-      { status: 200 }
+    const response = await messageService.updateAcceptStatus(
+      user._id,
+      result.data.acceptMessages
     );
-  } catch (error) {
-    return Response.json(
-      {
-        success: false,
-        message: `Failed to Update user status to accept messages: ${error}`,
-      },
-      { status: 500 }
-    );
-  }
-}
+    return successResponse(response.message);
+  })
+);
 
-export async function GET() {
-  await dbConnect();
-
-  const session = await getServerSession(authOptions);
-  const user: User = session?.user;
-
-  if (!session || !session?.user) {
-    return Response.json(
-      {
-        success: false,
-        message: "Not authenticated",
-      },
-      { status: 401 }
-    );
-  }
-
-  const userId = user?._id;
-  try {
-    const foundUser = await userModel.findById(userId);
-    if (!foundUser) {
-      return Response.json(
-        {
-          success: false,
-          message: "User not found",
-        },
-        { status: 404 }
-      );
-    }
-
-    return Response.json(
-      {
-        success: true,
-        isAcceptingMessages: foundUser.isAcceptingMessages,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    return Response.json(
-      {
-        success: false,
-        message: `Failed to Update user status to accept messages: ${error}`,
-      },
-      { status: 500 }
-    );
-  }
-}
+export const GET = withErrorHandler(
+  withAuth(async (_req, user) => {
+    const status = await messageService.getAcceptStatus(user._id);
+    return successResponse("Accept status retrieved", status);
+  })
+);

@@ -1,68 +1,12 @@
-import dbConnect from "@/lib/dbConnect";
-import { userModel } from "@/model/User.model";
-import { z } from "zod";
-import { usernameValidation } from "@/Schemas/signUpSchema";
+import { withErrorHandler } from "@/lib/api-handler";
+import { withQueryValidation } from "@/middleware/validate.middleware";
+import { checkUsernameSchema, type CheckUsernameInput } from "@/Schemas/user.schema";
+import { userService } from "@/services/user.service";
+import { successResponse } from "@/lib/api-response";
 
-const UsernameQuerySchema = z.object({
-  username: usernameValidation,
-});
-
-export async function GET(request: Request) {
-  await dbConnect();
-
-  try {
-    const { searchParams } = new URL(request.url);
-    const queryParam = {
-      username: searchParams.get("username"),
-    };
-
-    const result = UsernameQuerySchema.safeParse(queryParam);
-
-    if (!result.success) {
-      const usernameErrors = result.error.format().username?._errors || [];
-      return Response.json(
-        {
-          success: false,
-          message:
-            usernameErrors.length > 0
-              ? usernameErrors.join(", ")
-              : `Invalid query parameters`,
-        },
-        { status: 400 }
-      );
-    }
-
-    const { username } = result.data;
-
-    const existingVerifiedUser = await userModel.findOne({
-      username: username,
-      isVerified: true,
-    });
-
-    if (existingVerifiedUser) {
-      return Response.json(
-        {
-          success: false,
-          message: "Username is already exist.",
-        },
-        { status: 400 }
-      );
-    }
-
-    return Response.json(
-      {
-        success: true,
-        message: "Username is unique.",
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    return Response.json(
-      {
-        success: false,
-        message: `Error checking username: ${error}`,
-      },
-      { status: 500 }
-    );
-  }
-}
+export const GET = withErrorHandler(
+  withQueryValidation(checkUsernameSchema, async (_req, data: CheckUsernameInput) => {
+    const result = await userService.checkUsernameUnique(data.username);
+    return successResponse(result.message);
+  })
+);

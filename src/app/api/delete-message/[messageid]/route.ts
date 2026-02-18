@@ -1,54 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import dbConnect from "@/lib/dbConnect";
-import { authOptions } from "../../auth/[...nextauth]/options";
-import { userModel } from "@/model/User.model";
+import { withErrorHandler } from "@/lib/api-handler";
+import { withAuth, type AuthenticatedUser } from "@/middleware/auth.middleware";
+import { messageService } from "@/services/message.service";
+import { successResponse } from "@/lib/api-response";
 
-interface RouteContext {
-  params: Promise<{ messageid: string }>;
-}
-
-export async function DELETE(request: NextRequest, context: RouteContext) {
-  const { messageid } = await context.params;
-
-  await dbConnect();
-
-  const session = await getServerSession(authOptions);
-  const _user = session?.user;
-  if (!session || !_user) {
-    return NextResponse.json(
-      { success: false, message: "Not authenticated" },
-      { status: 401 }
-    );
-  }
-
-  try {
-    const updateResult = await userModel.updateOne(
-      { _id: _user._id },
-      { $pull: { messages: { _id: messageid } } }
-    );
-
-    if (updateResult.modifiedCount === 0) {
-      return NextResponse.json(
-        {
-          message: "Message not found or already deleted",
-          success: false,
-        },
-        { status: 404 }
-      );
+export const DELETE = withErrorHandler(
+  withAuth(
+    async (
+      _req: NextRequest,
+      user: AuthenticatedUser,
+      context?: { params: Promise<Record<string, string>> }
+    ): Promise<NextResponse> => {
+      const { messageid } = (await context?.params) ?? {};
+      const result = await messageService.deleteMessage(user._id, messageid);
+      return successResponse(result.message);
     }
-
-    return NextResponse.json(
-      { message: "Message deleted", success: true },
-      { status: 200 }
-    );
-  } catch (error) {
-    return NextResponse.json(
-      {
-        message: `Error deleting message: ${error}`,
-        success: false,
-      },
-      { status: 500 }
-    );
-  }
-}
+  )
+);
