@@ -1,15 +1,14 @@
-import "../globals.css";
 import Navbar from "@/components/component/Navbar";
 
-interface RootLayoutProps {
+interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-export default async function RootLayout({ children }: RootLayoutProps) {
+export default function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
-      {children}
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

@@ -1,66 +1,17 @@
-import dbConnect from "@/lib/dbConnect";
-import { userModel } from "@/model/User.model";
+import { withErrorHandler } from "@/lib/api-handler";
+import { withValidation } from "@/middleware/validate.middleware";
+import { withRateLimit } from "@/middleware/rate-limit.middleware";
+import { verifyCodeSchema, type VerifyCodeInput } from "@/Schemas/user.schema";
+import { userService } from "@/services/user.service";
+import { successResponse } from "@/lib/api-response";
+import { RATE_LIMITS } from "@/constants/config";
 
-export async function POST(request: Request) {
-  await dbConnect();
-
-  try {
-    const { username, otp } = await request.json();
-
-    const user = await userModel.findOne({
-      username: username,
-      isVerified: false,
-    });
-
-    if (!user) {
-      return Response.json(
-        {
-          success: false,
-          message: "User not found or already verified",
-        },
-        { status: 400 }
-      );
-    }
-
-    const isCodeValid = user.verifyCode === otp;
-    const isCodeNotExpired = new Date(user.verifyCodeExpires) > new Date();
-
-    if (isCodeValid && isCodeNotExpired) {
-      user.isVerified = true;
-      await user.save();
-
-      return Response.json(
-        {
-          success: true,
-          message: "Account Verified Successfully",
-        },
-        { status: 200 }
-      );
-    } else if (!isCodeNotExpired) {
-      return Response.json(
-        {
-          success: false,
-          message:
-            "Verification code is expiried, please signup again to get a new code",
-        },
-        { status: 400 }
-      );
-    } else {
-      return Response.json(
-        {
-          success: false,
-          message: "Invalid Verification code",
-        },
-        { status: 400 }
-      );
-    }
-  } catch (error) {
-    return Response.json(
-      {
-        success: false,
-        message: `Error verifing user: ${error}`,
-      },
-      { status: 500 }
-    );
-  }
-}
+export const POST = withErrorHandler(
+  withRateLimit(
+    RATE_LIMITS.verifyCode,
+    withValidation(verifyCodeSchema, async (_req, data: VerifyCodeInput) => {
+      const result = await userService.verifyCode(data);
+      return successResponse(result.message);
+    })
+  )
+);

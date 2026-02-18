@@ -1,43 +1,48 @@
 "use client";
+
 import React from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { Button } from "../ui/button";
-import { User } from "next-auth";
+import { Button } from "@/components/ui/button";
+import { MessageSquare, LogOut } from "lucide-react";
 
 function Navbar() {
   const { data: session } = useSession();
-  const user: User = session?.user;
 
   return (
-    <nav className="p-4 sm:p-6 shadow-md bg-gray-900 text-white">
-      <div className="container mx-auto flex flex-col text-center sm:flex-row justify-between align-middle">
-        <Link href="/" className="text-xl font-bold">
-          True Feedback
+    <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4 sm:px-6">
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-bold text-foreground hover:opacity-80 transition-opacity"
+        >
+          <MessageSquare className="h-5 w-5 text-primary" />
+          <span className="hidden sm:inline">Mystery Message</span>
         </Link>
-        {session ? (
-          <>
-            <span className="mr-4 mb-2 sm:mb-0">
-              Welcome, {user?.username || user?.email}
-            </span>
-            <Button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="w-full md:w-auto bg-slate-200 hover:bg-slate-300 text-black"
-              variant="outline"
-            >
-              Logout
-            </Button>
-          </>
-        ) : (
-          <Link href="/sign-in">
-            <Button
-              className="w-full md:w-auto bg-slate-200 hover:bg-slate-300 text-black"
-              variant={"outline"}
-            >
-              Login
-            </Button>
-          </Link>
-        )}
+
+        <div className="flex items-center gap-3">
+          {session ? (
+            <>
+              <span className="text-sm text-muted-foreground hidden sm:inline">
+                {session.user?.username || session.user?.email}
+              </span>
+              <Button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                variant="outline"
+                size="sm"
+              >
+                <LogOut className="mr-1 h-4 w-4" />
+                Logout
+              </Button>
+            </>
+          ) : (
+            <Link href="/sign-in">
+              <Button variant="default" size="sm">
+                Sign In
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );

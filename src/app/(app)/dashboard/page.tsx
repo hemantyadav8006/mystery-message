@@ -5,207 +5,132 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Message } from "@/model/User.model";
-import { acceptMessagesSchema } from "@/Schemas/acceptMessageSchema";
-import { ApiResponse } from "@/types/ApiResponse";
-import { zodResolver } from "@hookform/resolvers/zod";
-import axios, { AxiosError } from "axios";
-import { Loader2, RefreshCcw } from "lucide-react";
-import { Schema } from "mongoose";
+import { useMessages, useAcceptMessages } from "@/hooks/use-messages";
+import { Loader2, RefreshCcw, Copy, Check, Link as LinkIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
-import React, { useCallback, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useMemo, useCallback } from "react";
+import { MessageListSkeleton } from "@/components/shared/LoadingSkeleton";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 function UserDashboard() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSwitchLoading, setIsSwitchLoading] = useState(false);
+  const { data: session, status } = useSession();
+  const { messages, isLoading, fetchMessages, deleteMessage } = useMessages();
+  const { acceptMessages, isLoading: isSwitchLoading, toggleAccept } = useAcceptMessages();
   const [isCopied, setIsCopied] = useState(false);
-
   const { toast } = useToast();
 
-  const handleDeleteMessage = async (messageId: Schema.Types.ObjectId) => {
-    try {
-      await axios.delete(`/api/delete-message/${messageId}`);
-      setMessages(messages.filter((message) => message._id !== messageId));
-      toast({
-        title: "Message Deleted",
-        description: "The message has been successfully deleted.",
-      });
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast({
-        title: "Error",
-        description:
-          axiosError.response?.data.message ?? "Failed to delete message",
-        variant: "destructive",
-      });
-    }
-  };
+  const profileUrl = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}/u/${session?.user?.username}`;
+  }, [session?.user?.username]);
 
-  const { data: session } = useSession();
-
-  const form = useForm({
-    resolver: zodResolver(acceptMessagesSchema),
-  });
-
-  const { register, watch, setValue } = form;
-  const acceptMessages = watch("acceptMessages");
-
-  const fetchAcceptMessages = useCallback(async () => {
-    setIsSwitchLoading(true);
-    try {
-      const response = await axios.get("/api/accept-messages");
-      setValue("acceptMessages", response.data?.isAcceptingMessages);
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast({
-        title: "Error",
-        description:
-          axiosError.response?.data.message ??
-          "Failed to fetch message settings",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSwitchLoading(false);
-    }
-  }, [setValue, toast]);
-
-  const fetchMessages = useCallback(
-    async (refresh: boolean = false) => {
-      setIsLoading(true);
-      try {
-        const response = await axios.get("/api/get-messages");
-        setMessages(response?.data?.data);
-        if (refresh) {
-          toast({
-            title: "Messages Refreshed!",
-            description: "Showing latest messages",
-          });
-        }
-      } catch (error) {
-        const axiosError = error as AxiosError<ApiResponse>;
-        toast({
-          description: axiosError.response?.data.message,
-        });
-      } finally {
-        setIsLoading(false);
-        setIsSwitchLoading(false);
-      }
-    },
-    [toast]
-  );
-
-  useEffect(() => {
-    if (!session || !session.user) return;
-
-    fetchMessages();
-    fetchAcceptMessages();
-  }, [session, fetchMessages, fetchAcceptMessages]);
-
-  const handleSwitchChange = async () => {
-    try {
-      const response = await axios.post<ApiResponse>("/api/accept-messages", {
-        acceptMessages: !acceptMessages,
-      });
-      setValue("acceptMessages", !acceptMessages);
-      toast({
-        title: response.data.message,
-        variant: "default",
-      });
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>;
-      toast({
-        title: "Error",
-        description:
-          axiosError.response?.data.message ??
-          "Failed to update message settings",
-        variant: "destructive",
-      });
-    }
-  };
-
-  if (!session || !session.user) {
-    return <div>Please Login</div>;
-  }
-
-  const { username } = session?.user;
-
-  const baseUrl = `${window.location.protocol}//${window.location.host}`;
-  const profileUrl = `${baseUrl}/u/${username}`;
-
-  const copyToClipboard = () => {
+  const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(profileUrl);
     setIsCopied(true);
-    toast({
-      title: "URL Copied!",
-      description: "Profile URL has been copied to clipboard.",
-    });
-    setTimeout(() => {
-      setIsCopied(false);
-    }, 3000);
-  };
+    toast({ title: "Link copied!", description: "Profile URL copied to clipboard." });
+    setTimeout(() => setIsCopied(false), 3000);
+  }, [profileUrl, toast]);
+
+  if (status === "loading") {
+    return (
+      <div className="mx-auto max-w-5xl p-6">
+        <MessageListSkeleton />
+      </div>
+    );
+  }
+
+  if (!session?.user) {
+    return null;
+  }
 
   return (
-    <div className="p-5 xl:px-60 lg:px-40 md:px-28 bg-white">
-      <h1 className="text-4xl font-bold mb-4">User Dashboard</h1>
+    <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Dashboard
+        </h1>
+        <p className="mt-1 text-muted-foreground">
+          Manage your anonymous messages and settings.
+        </p>
+      </div>
 
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold mb-2">Copy Your Unique Link</h2>{" "}
-        <div className="flex items-center">
+      <div className="mb-6 rounded-lg border border-border bg-card p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <LinkIcon className="h-4 w-4 text-muted-foreground" />
+          <h2 className="text-sm font-medium text-foreground">
+            Your Public Profile Link
+          </h2>
+        </div>
+        <div className="flex items-center gap-2">
           <input
             type="text"
             value={profileUrl}
-            disabled
-            className="input input-bordered w-full p-2 mr-2"
+            readOnly
+            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+            aria-label="Profile URL"
           />
-          <Button onClick={copyToClipboard}>
-            {isCopied ? "Copied!" : "Copy"}
+          <Button onClick={copyToClipboard} variant="outline" size="sm">
+            {isCopied ? (
+              <><Check className="mr-1 h-4 w-4" /> Copied</>
+            ) : (
+              <><Copy className="mr-1 h-4 w-4" /> Copy</>
+            )}
           </Button>
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-6 flex items-center gap-3">
         <Switch
-          {...register("acceptMessages")}
           checked={acceptMessages}
-          onCheckedChange={handleSwitchChange}
+          onCheckedChange={toggleAccept}
           disabled={isSwitchLoading}
+          aria-label="Accept messages toggle"
         />
-        <span className="ml-2">
-          Accept Messages: {acceptMessages ? "On" : "Off"}
+        <span className="text-sm font-medium text-foreground">
+          Accept Messages:{" "}
+          <span className={acceptMessages ? "text-green-600" : "text-muted-foreground"}>
+            {acceptMessages ? "On" : "Off"}
+          </span>
         </span>
       </div>
-      <Separator />
 
-      <Button
-        className="mt-4"
-        variant="outline"
-        onClick={(e) => {
-          e.preventDefault();
-          fetchMessages(true);
-        }}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <RefreshCcw className="h-4 w-4" />
-        )}
-      </Button>
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {messages.length > 0 ? (
-          messages.map((message, i) => (
-            <MessageCard
-              key={i}
-              message={message}
-              onMessageDelete={handleDeleteMessage}
-            />
-          ))
-        ) : (
-          <p>No messages to display.</p>
-        )}
+      <Separator className="mb-6" />
+
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">
+          Messages ({messages.length})
+        </h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => fetchMessages(true)}
+          disabled={isLoading}
+          aria-label="Refresh messages"
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCcw className="h-4 w-4" />
+          )}
+          <span className="ml-2 hidden sm:inline">Refresh</span>
+        </Button>
       </div>
+
+      {isLoading ? (
+        <MessageListSkeleton />
+      ) : messages.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {messages.map((message) => (
+            <MessageCard
+              key={message._id.toString()}
+              message={{ ...message, _id: message._id.toString() }}
+              onDelete={deleteMessage}
+            />
+          ))}
+        </div>
+      ) : (
+        <EmptyState />
+      )}
     </div>
   );
 }

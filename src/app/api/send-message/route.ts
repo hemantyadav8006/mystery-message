@@ -1,53 +1,17 @@
-import dbConnect from "@/lib/dbConnect";
-import { userModel } from "@/model/User.model";
-import { Message } from "@/model/User.model";
+import { withErrorHandler } from "@/lib/api-handler";
+import { withValidation } from "@/middleware/validate.middleware";
+import { withRateLimit } from "@/middleware/rate-limit.middleware";
+import { sendMessageSchema, type SendMessageInput } from "@/Schemas/message.schema";
+import { messageService } from "@/services/message.service";
+import { successResponse } from "@/lib/api-response";
+import { RATE_LIMITS } from "@/constants/config";
 
-export async function POST(req: Request) {
-  await dbConnect();
-
-  const { username, content } = await req.json();
-
-  try {
-    const user = await userModel.findOne({ username });
-    if (!user) {
-      return Response.json(
-        {
-          success: false,
-          message: "User not found",
-        },
-        { status: 404 }
-      );
-    }
-
-    if (!user.isAcceptingMessages) {
-      return Response.json(
-        {
-          success: false,
-          message: "User is not accepting messages",
-        },
-        { status: 403 }
-      );
-    }
-
-    const newMessage = { content, createdAt: new Date() };
-    user.messages.push(newMessage as Message);
-
-    await user.save();
-
-    return Response.json(
-      {
-        success: true,
-        message: "Message sent successfully",
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    return Response.json(
-      {
-        success: false,
-        message: "Internal server error: " + error,
-      },
-      { status: 500 }
-    );
-  }
-}
+export const POST = withErrorHandler(
+  withRateLimit(
+    RATE_LIMITS.sendMessage,
+    withValidation(sendMessageSchema, async (_req, data: SendMessageInput) => {
+      const result = await messageService.sendMessage(data.username, data.content);
+      return successResponse(result.message, undefined, 201);
+    })
+  )
+);
