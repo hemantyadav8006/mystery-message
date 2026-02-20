@@ -80,6 +80,10 @@ export const userService = {
       throw new NotFoundError("User not found or already verified");
     }
 
+    if (user.verifyCodeExpires == null || user.verifyCode == null) {
+      throw new NotFoundError("User not found or already verified");
+    }
+
     const isCodeExpired = new Date(user.verifyCodeExpires) <= new Date();
     if (isCodeExpired) {
       throw new ValidationError(

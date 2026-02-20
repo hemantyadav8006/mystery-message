@@ -5,15 +5,24 @@ export interface IMessage {
   createdAt: Date;
 }
 
+export type AuthProvider = "credentials" | "google";
+
 export interface IUser {
   username: string;
   email: string;
-  password: string;
-  verifyCode: string;
-  verifyCodeExpires: Date;
+  /** Required for credentials auth; omitted for OAuth-only users */
+  password?: string;
+  verifyCode?: string;
+  verifyCodeExpires?: Date;
   isVerified: boolean;
   isAcceptingMessages: boolean;
   messages: IMessage[];
+  /** Default: "user". Enables future role-based access. */
+  role: string;
+  /** Profile image URL (e.g. from OAuth provider) */
+  image?: string;
+  /** How the user signed up; used for account linking and UX. */
+  provider?: AuthProvider;
 }
 
 export interface Message extends IMessage, Document {
@@ -55,15 +64,15 @@ const UserSchema: Schema<User> = new Schema(
     },
     password: {
       type: String,
-      required: [true, "Password is required!"],
+      required: false, // OAuth users may have no password
     },
     verifyCode: {
       type: String,
-      required: [true, "Verify code is required!"],
+      required: false,
     },
     verifyCodeExpires: {
       type: Date,
-      required: [true, "Verify code Expiry is required!"],
+      required: false,
     },
     isVerified: {
       type: Boolean,
@@ -74,6 +83,20 @@ const UserSchema: Schema<User> = new Schema(
       default: true,
     },
     messages: [MessageSchema],
+    role: {
+      type: String,
+      default: "user",
+      enum: ["user", "admin"],
+    },
+    image: {
+      type: String,
+      required: false,
+    },
+    provider: {
+      type: String,
+      enum: ["credentials", "google"],
+      required: false,
+    },
   },
   { timestamps: true }
 );
