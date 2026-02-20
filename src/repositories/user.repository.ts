@@ -1,5 +1,10 @@
 import dbConnect from "@/lib/dbConnect";
-import { userModel, type User, type IMessage } from "@/model/User.model";
+import {
+  userModel,
+  type User,
+  type IMessage,
+  type AuthProvider,
+} from "@/model/User.model";
 import mongoose from "mongoose";
 
 export interface CreateUserData {
@@ -8,6 +13,13 @@ export interface CreateUserData {
   password: string;
   verifyCode: string;
   verifyCodeExpires: Date;
+}
+
+export interface CreateOAuthUserData {
+  email: string;
+  username: string;
+  image?: string;
+  provider: AuthProvider;
 }
 
 export const userRepository = {
@@ -43,6 +55,24 @@ export const userRepository = {
       isVerified: false,
       isAcceptingMessages: true,
       messages: [],
+    });
+    return user.save();
+  },
+
+  /** Idempotent: find by email or create OAuth user. No password. */
+  async findOrCreateOAuthUser(data: CreateOAuthUserData): Promise<User> {
+    await dbConnect();
+    const existing = await userModel.findOne({ email: data.email });
+    if (existing) return existing;
+    const user = new userModel({
+      email: data.email,
+      username: data.username,
+      image: data.image,
+      provider: data.provider,
+      isVerified: true,
+      isAcceptingMessages: true,
+      messages: [],
+      role: "user",
     });
     return user.save();
   },
