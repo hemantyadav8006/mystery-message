@@ -31,9 +31,21 @@ bun dev
 #### Environment variables you need for this project
 
 ```docs
-NEXTAUTH_SECRET=xyz
 MONGODB_URI=
+
+NEXTAUTH_SECRET=xyz
+NEXTAUTH_URL=
+
 RESEND_API_KEY=
+EMAIL_FROM=
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+GOOGLE_GENERATIVE_AI_API_KEY=
+
+NEXT_PUBLIC_APP_URL=
+NODE_ENV=
 ```
 
 ---
