@@ -76,7 +76,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         if (!user.isVerified) {
-          throw new Error("Please verify your account before logging in");
+          throw new Error("Account is not verified!, Sign up Again!");
         }
 
         const isPasswordCorrect = await bcrypt.compare(
