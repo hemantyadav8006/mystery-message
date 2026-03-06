@@ -1,7 +1,7 @@
-import { getResend } from "@/lib/resend";
 import VerificationEmail from "../../Emails/VerificationEmails";
 import { ApiResponse } from "@/types/ApiResponse";
 import { getBaseUrl } from "@/constants/config";
+import { sendEmail } from "@/utils/sendEmail";
 
 export async function sendVerificationEmail({
   email,
@@ -13,17 +13,19 @@ export async function sendVerificationEmail({
   verifyCode: string;
 }): Promise<ApiResponse> {
   try {
-    await getResend().emails.send({
-      from: "onboarding@resend.dev",
+    await sendEmail({
       to: email,
       subject: "Mystery Message | True Feedback | Verification Code 😉",
-      react: VerificationEmail({
-        username,
-        otp: verifyCode,
-        baseUrl: getBaseUrl(),
-      }),
+      react: (
+        <VerificationEmail
+          username={username}
+          otp={verifyCode}
+          baseUrl={getBaseUrl()}
+        />
+      ),
     });
-    return { success: true, message: "Verification Email send Successfully!" };
+
+    return { success: true, message: "Verification Email sent successfully!" };
   } catch (emailError) {
     return {
       success: false,
