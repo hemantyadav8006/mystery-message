@@ -1,4 +1,4 @@
-import { getResend } from "@/lib/resend";
+import { sendEmail } from "@/utils/sendEmail";
 import VerificationEmail from "../../Emails/VerificationEmails";
 import { getBaseUrl } from "@/constants/config";
 
@@ -13,12 +13,14 @@ export const emailService = {
     email,
     username,
     verifyCode,
-  }: SendVerificationEmailParams): Promise<{ success: boolean; message: string }> {
+  }: SendVerificationEmailParams): Promise<{
+    success: boolean;
+    message: string;
+  }> {
     try {
-      await getResend().emails.send({
-        from: process.env.EMAIL_FROM || "onboarding@resend.dev",
+      await sendEmail({
         to: email,
-        subject: "Mystery Message — Verify Your Account",
+        subject: "Mystery Message | True Feedback | Verification Code 😉",
         react: VerificationEmail({
           username,
           otp: verifyCode,
