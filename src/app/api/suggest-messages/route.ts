@@ -1,4 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  GoogleGenerativeAI,
+  type GenerativeModel,
+  type GenerateContentResult,
+} from "@google/generative-ai";
 import { withRateLimit } from "@/middleware/rate-limit.middleware";
 import { withErrorHandler } from "@/lib/api-handler";
 import { RATE_LIMITS } from "@/constants/config";
@@ -26,12 +30,17 @@ const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
 /* ---------------- RETRY LOGIC ---------------- */
 
-async function generateWithRetry(model: any, prompt: string, retries = 3) {
+async function generateWithRetry(
+  model: GenerativeModel,
+  prompt: string,
+  retries = 3,
+): Promise<GenerateContentResult> {
   for (let i = 0; i < retries; i++) {
     try {
       return await model.generateContent(prompt);
-    } catch (error: any) {
-      if (error?.status === 429 && i < retries - 1) {
+    } catch (error: unknown) {
+      const typedError = error as { status?: number };
+      if (typedError?.status === 429 && i < retries - 1) {
         const delay = 1000 * (i + 1);
         await new Promise((res) => setTimeout(res, delay));
       } else {
@@ -39,6 +48,7 @@ async function generateWithRetry(model: any, prompt: string, retries = 3) {
       }
     }
   }
+  throw new Error("Failed to generate content after retries");
 }
 
 /* ---------------- QUESTION GENERATOR ---------------- */
@@ -55,7 +65,7 @@ const FALLBACK_QUESTIONS = [
   "What's a goal you're currently working toward?",
 ];
 
-async function getQuestions(model: any) {
+async function getQuestions(model: GenerativeModel): Promise<string[]> {
   const now = Date.now();
 
   if (cachedQuestions && now - cacheTime < CACHE_DURATION) {
@@ -71,8 +81,9 @@ async function getQuestions(model: any) {
       .filter(Boolean);
     cacheTime = now;
     return cachedQuestions;
-  } catch (error: any) {
-    if (error?.status === 429 || error?.status === 404) {
+  } catch (error: unknown) {
+    const typedError = error as { status?: number };
+    if (typedError?.status === 429 || typedError?.status === 404) {
       console.warn("Gemini unavailable — using fallback questions");
       return FALLBACK_QUESTIONS; // your hardcoded array
     }
@@ -83,36 +94,40 @@ async function getQuestions(model: any) {
 /* ---------------- API ROUTE ---------------- */
 
 export const POST = withErrorHandler(
-  withRateLimit(
-    RATE_LIMITS.suggestMessages,
-    async (req: Request): Promise<Response> => {
-      const model = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash",
+  withRateLimit(RATE_LIMITS.suggestMessages, async (): Promise<Response> => {
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+    });
+
+    try {
+      const questions = await getQuestions(model);
+
+      const randomQuestions =
+        questions && questions.length > 0
+          ? questions.sort(() => 0.5 - Math.random()).slice(0, 3)
+          : [];
+      return Response.json({ questions: randomQuestions });
+    } catch (error: unknown) {
+      const typedError = error as {
+        message?: string;
+        status?: number;
+        stack?: string;
+      };
+
+      console.error("❌ Gemini suggest-messages error:", {
+        message: typedError?.message,
+        status: typedError?.status,
+        stack: typedError?.stack,
       });
 
-      try {
-        const questions = await getQuestions(model);
-
-        const randomQuestions =
-          questions && questions.length > 0
-            ? questions.sort(() => 0.5 - Math.random()).slice(0, 3)
-            : [];
-
-        return Response.json({ questions: randomQuestions });
-      } catch (error: any) {
-        // ✅ Now you'll see the real error in server logs
-        console.error("❌ Gemini suggest-messages error:", {
-          message: error?.message,
-          status: error?.status,
-          stack: error?.stack,
-        });
-
-        // ✅ Also return the error to the client temporarily for debugging
-        return Response.json(
-          { questions: [], debug_error: error?.message ?? "Unknown error" },
-          { status: 500 },
-        );
-      }
-    },
-  ),
+      // ✅ Also return the error to the client temporarily for debugging
+      return Response.json(
+        {
+          questions: [],
+          debug_error: typedError?.message ?? "Unknown error",
+        },
+        { status: 500 },
+      );
+    }
+  }),
 );
