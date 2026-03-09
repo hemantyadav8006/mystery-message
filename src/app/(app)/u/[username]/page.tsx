@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -35,6 +35,8 @@ export default function SendMessage() {
 
   const messageContent = form.watch("content");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuggestLoading, setIsSuggestLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const onSubmit = async (data: MessageFormValues) => {
     setIsLoading(true);
@@ -53,8 +55,49 @@ export default function SendMessage() {
     }
   };
 
+  const handleSuggestMessages = async () => {
+    if (isSuggestLoading) return; // prevent multiple clicks
+
+    setIsSuggestLoading(true);
+
+    try {
+      const response = await fetch("/api/suggest-messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || "Failed to fetch suggestions");
+      }
+
+      setSuggestions(data.questions || []);
+    } catch (error) {
+      console.error("Suggestion error:", error);
+
+      // optional fallback for UI
+      setSuggestions([
+        "What's a hobby you've recently started?",
+        "What's something that always makes you smile?",
+        "If you could travel anywhere tomorrow, where would you go?",
+      ]);
+    } finally {
+      setIsSuggestLoading(false);
+    }
+  };
+
+  const handleUseSuggestion = (suggestion: string) => {
+    form.setValue("content", suggestion, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
   return (
-    <div className="mx-auto my-8 max-w-2xl px-4 sm:px-6">
+    <div className="mx-auto my-8 max-w-2xl px-4 sm:px-6 space-y-8">
       <div className="rounded-xl border border-border bg-card p-6 sm:p-8 shadow-sm">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
           Send Anonymous Message
@@ -87,15 +130,17 @@ export default function SendMessage() {
                 </FormItem>
               )}
             />
+
             <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={isLoading || !messageContent}
-              >
+              <Button type="submit" disabled={isLoading || !messageContent}>
                 {isLoading ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</>
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
+                  </>
                 ) : (
-                  <><Send className="mr-2 h-4 w-4" /> Send Message</>
+                  <>
+                    <Send className="mr-2 h-4 w-4" /> Send Message
+                  </>
                 )}
               </Button>
             </div>
@@ -105,8 +150,59 @@ export default function SendMessage() {
         <Separator className="my-6" />
 
         <p className="text-center text-sm text-muted-foreground">
-          Messages are completely anonymous. The recipient will never know who sent it.
+          Messages are completely anonymous. The recipient will never know who
+          sent it.
         </p>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+        {/* AI suggestions trigger + list */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Need inspiration? Let AI suggest some anonymous questions.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isSuggestLoading}
+              onClick={handleSuggestMessages}
+            >
+              {isSuggestLoading ? (
+                <>
+                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-1 h-3 w-3" />
+                  Suggest questions
+                </>
+              )}
+            </Button>
+          </div>
+
+          {suggestions.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                Tap a suggestion to use it as your message:
+              </p>
+              <div className="grid gap-2">
+                {suggestions.map((s, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleUseSuggestion(s)}
+                    className="w-full rounded-lg border border-border bg-muted/40 px-3 py-2 text-left text-xs sm:text-sm hover:bg-muted transition-colors"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
